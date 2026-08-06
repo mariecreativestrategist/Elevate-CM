@@ -1,0 +1,272 @@
+// Cadence — schéma Postgres (Supabase). Les scopes d'accès (un client ne voit que ses
+// données) sont appliqués côté application (voir lib/scoping.ts) plutôt qu'en policies RLS.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  admin
+  membre_equipe
+}
+
+enum ClientStatus {
+  actif
+  archive
+}
+
+enum CollaborationStageName {
+  onboarding
+  strategie
+  calendrier
+  resultats
+}
+
+enum CollaborationStageStatus {
+  a_faire
+  en_cours
+  complete
+}
+
+enum QuestionType {
+  texte_court
+  texte_long
+  choix_multiple
+  upload
+}
+
+enum DocumentType {
+  strategie
+  resultats
+  contrat
+  facture
+}
+
+enum DocumentStatus {
+  en_attente
+  depose
+}
+
+enum InvoiceStatus {
+  payee
+  en_attente
+  en_retard
+}
+
+enum ContentType {
+  reel
+  carrousel
+  story
+  post
+  tiktok
+}
+
+enum PostStatus {
+  planifie
+  a_valider
+  approuve
+  publie
+}
+
+enum RequestStatus {
+  nouveau
+  en_cours
+  traite
+}
+
+enum KanbanColumn {
+  a_faire
+  en_cours
+  en_validation
+  termine
+}
+
+enum SenderRole {
+  admin
+  client
+}
+
+enum AuthRole {
+  admin
+  client
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  nom          String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(admin)
+  createdAt    DateTime  @default(now())
+
+  messages    Message[]
+  tasks       Task[]
+  resetTokens PasswordResetToken[]
+}
+
+model Client {
+  id           String       @id @default(cuid())
+  nom          String
+  email        String       @unique
+  passwordHash String
+  offre        String
+  statut       ClientStatus @default(actif)
+  createdAt    DateTime     @default(now())
+
+  stages              CollaborationStage[]
+  onboardingAnswers   OnboardingAnswer[]
+  documents           Document[]
+  invoices            Invoice[]
+  editorialPosts      EditorialPost[]
+  modificationRequests ModificationRequest[]
+  calls               Call[]
+  conversation        Conversation?
+  tasks               Task[]
+  resetTokens         PasswordResetToken[]
+}
+
+model CollaborationStage {
+  id         String                    @id @default(cuid())
+  clientId   String
+  client     Client                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  etape      CollaborationStageName
+  statut     CollaborationStageStatus  @default(a_faire)
+  updatedAt  DateTime                  @updatedAt
+
+  @@unique([clientId, etape])
+}
+
+model OnboardingQuestion {
+  id         String       @id @default(cuid())
+  texte      String
+  type       QuestionType
+  options    String? // JSON stringifié des choix si choix_multiple
+  obligatoire Boolean     @default(true)
+  ordre      Int          @default(0)
+
+  answers OnboardingAnswer[]
+}
+
+model OnboardingAnswer {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  questionId String
+  question   OnboardingQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reponse    String?  // texte, choix, ou URL de fichier
+  updatedAt  DateTime @updatedAt
+
+  @@unique([clientId, questionId])
+}
+
+model Document {
+  id          String         @id @default(cuid())
+  clientId    String
+  client      Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type        DocumentType
+  nomFichier  String
+  url         String
+  statut      DocumentStatus @default(depose)
+  deposeLe    DateTime       @default(now())
+}
+
+model Invoice {
+  id        String        @id @default(cuid())
+  clientId  String
+  client    Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  montant   Float
+  statut    InvoiceStatus @default(en_attente)
+  echeance  DateTime
+  url       String?
+  createdAt DateTime      @default(now())
+}
+
+model EditorialPost {
+  id           String      @id @default(cuid())
+  clientId     String
+  client       Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  titre        String
+  typeContenu  ContentType
+  pilier       String?
+  description  String?
+  visuelUrl    String?
+  datePlanifiee DateTime
+  statut       PostStatus  @default(planifie)
+  createdAt    DateTime    @default(now())
+
+  modificationRequests ModificationRequest[]
+}
+
+model ModificationRequest {
+  id              String         @id @default(cuid())
+  clientId        String
+  client          Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  editorialPostId String?
+  editorialPost   EditorialPost? @relation(fields: [editorialPostId], references: [id], onDelete: SetNull)
+  titre           String
+  description     String
+  statut          RequestStatus  @default(nouveau)
+  createdAt       DateTime       @default(now())
+}
+
+model Call {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  titre     String
+  date      DateTime
+  dureeMin  Int
+  lienVisio String?
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id       String @id @default(cuid())
+  clientId String @unique
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  expediteurRole SenderRole
+  adminId        String?
+  admin          Admin?       @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  contenu        String
+  createdAt      DateTime     @default(now())
+  lu             Boolean      @default(false)
+}
+
+model Task {
+  id        String       @id @default(cuid())
+  titre     String
+  clientId  String?
+  client    Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  colonne   KanbanColumn @default(a_faire)
+  assigneId String?
+  assigne   Admin?       @relation(fields: [assigneId], references: [id], onDelete: SetNull)
+  date      DateTime?
+  ordre     Int          @default(0)
+  createdAt DateTime     @default(now())
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  role      AuthRole
+  clientId  String?
+  client    Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  adminId   String?
+  admin     Admin?    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
