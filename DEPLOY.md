@@ -72,7 +72,25 @@ Un message de succès s'affiche en bas — toutes les tables sont créées, **av
 1. Va sur [resend.com](https://resend.com), connecte-toi.
 2. Menu de gauche : **API Keys → Create API Key**. Donne-lui un nom, clique **Add**.
 3. Copie la clé affichée (une seule fois) dans ton fichier texte.
-4. *Sans étape supplémentaire, Resend n'autorise l'envoi qu'à l'adresse e-mail de ton propre compte.* Pour envoyer à de vrais clients, vérifie un nom de domaine (**Domains → Add Domain**). **Tu peux déployer sans faire cette étape maintenant** et la faire plus tard.
+4. *Sans étape supplémentaire, Resend n'autorise l'envoi qu'à l'adresse e-mail de ton propre compte.* **Tu peux déployer sans faire l'étape suivante maintenant** et la faire plus tard — le site fonctionne très bien sans.
+
+### Vérifier ton propre nom de domaine sur Resend (optionnel)
+
+Pour envoyer de vrais e-mails à tes clients (pas juste à toi-même), il faut prouver à Resend que tu es bien propriétaire d'un nom de domaine (ex: `tonagence.com`). Ça se fait en ajoutant quelques lignes de configuration chez l'endroit où tu as acheté ce nom de domaine (OVH, Namecheap, Google Domains...) — pas besoin de compétences techniques, juste de copier-coller.
+
+1. Sur [resend.com](https://resend.com), menu de gauche : **Domains → Add Domain**.
+2. Tape ton nom de domaine (ex: `tonagence.com`, sans "www" ni "https://") → **Add**.
+3. Resend affiche un tableau de **plusieurs lignes** (souvent 3 à 5), chacune avec un **Type** (`TXT`, `MX`, ou `CNAME`), un **Name/Host** et une **Value**. C'est ça qu'il faut recopier chez ton fournisseur de domaine.
+4. Ouvre un nouvel onglet, connecte-toi au site où tu as acheté ton domaine, cherche une section appelée **"DNS"**, **"Zone DNS"** ou **"Gérer le domaine"**.
+5. Pour **chaque ligne** affichée par Resend, crée un nouvel enregistrement DNS avec exactement le même Type, Name/Host et Value (souvent un bouton "Add record" ou "Ajouter un enregistrement"). Enregistre après chaque ligne.
+6. Reviens sur Resend, clique **Verify** (ou "Verify DNS Records"). Ça peut être immédiat ou prendre jusqu'à quelques heures selon le fournisseur de domaine — si ça échoue, attends un peu et réessaie.
+7. Une fois vérifié (coche verte), utilise une adresse sur ce domaine comme `RESEND_FROM_EMAIL`, par exemple :
+   ```
+   Cadence <contact@tonagence.com>
+   ```
+   (l'adresse n'a pas besoin d'exister réellement comme boîte mail — c'est juste l'expéditeur affiché)
+
+> 💡 Chaque fournisseur de domaine a une interface différente pour les DNS — si tu ne trouves pas où ajouter ces enregistrements, cherche "gérer DNS [nom de ton fournisseur]" ou demande de l'aide en montrant la page.
 
 ---
 
@@ -107,13 +125,26 @@ Clique sur ce bouton (ou colle l'adresse dans ton navigateur) :
 4. Connecte-toi au site avec `admin@exemple.com` / `changeme123`, va dans **Paramètres** (menu de gauche) et **change immédiatement ce mot de passe** (et l'e-mail si tu veux).
 5. Teste : upload d'un document, envoi d'un message dans le chat (vérifie la réception de l'e-mail).
 
-## Étape 9 (optionnel) — Ton propre nom de domaine
+## Étape 9 (optionnel) — Changer l'adresse du site
+
+L'adresse `https://espace-membre-xxxx.vercel.app` fonctionne très bien telle quelle, mais tu peux la changer.
+
+### Option A — Renommer juste le sous-domaine gratuit (aucun achat nécessaire)
+
+1. Dans Vercel : **Project → Settings → Domains**.
+2. Dans le champ pour ajouter un domaine, tape le nom que tu veux en `.vercel.app`, ex: `tonagence.vercel.app` → **Add** (si le nom est déjà pris par quelqu'un d'autre, essaie une variante).
+3. Il devient l'adresse principale du site.
+
+### Option B — Utiliser ton propre nom de domaine
 
 Si tu as un nom de domaine (acheté chez OVH, Namecheap...) :
 
-1. Dans Vercel : **Project → Settings → Domains** → tape ton adresse souhaitée → **Add**.
-2. Suis les instructions DNS affichées (à ajouter chez ton fournisseur de domaine).
-3. Une fois validé, refais l'étape 8 (mettre à jour `NEXT_PUBLIC_APP_URL`, puis redéployer).
+1. Dans Vercel : **Project → Settings → Domains** → tape ton adresse souhaitée (ex: `espace.tonagence.com`) → **Add**.
+2. Suis les instructions DNS affichées (même principe que pour Resend à l'étape 6 : des enregistrements à ajouter chez ton fournisseur de domaine).
+
+### Dans les deux cas
+
+Une fois la nouvelle adresse active, refais l'étape 8 : mets à jour `NEXT_PUBLIC_APP_URL` avec cette nouvelle adresse dans les Environment Variables, puis **Redeploy** — sinon les liens dans les e-mails pointeraient encore vers l'ancienne adresse.
 
 ---
 
