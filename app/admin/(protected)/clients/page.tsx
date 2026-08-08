@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Archive, ArchiveRestore } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { AddClientDialog } from "@/components/admin/add-client-dialog";
+import { DeleteClientButton } from "@/components/admin/delete-client-button";
 import { OfferBadge } from "@/components/shared/badges";
 import { Stepper } from "@/components/shared/stepper";
 import { toggleClientStatusAction } from "@/lib/actions/clients";
@@ -65,6 +66,7 @@ export default async function ClientsPage() {
                     )}
                   </button>
                 </form>
+                <DeleteClientButton clientId={client.id} clientNom={client.nom} />
               </div>
             </div>
           );

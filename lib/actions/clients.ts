@@ -7,7 +7,9 @@ import { requireAdmin } from "@/lib/auth";
 import { hashPassword } from "@/lib/auth";
 import { sendEmail, inviteClientEmail } from "@/lib/email";
 
-export type FormState = { error?: string; success?: string } | undefined;
+export type FormState =
+  | { error?: string; success?: string; inviteUrl?: string; emailSent?: boolean }
+  | undefined;
 
 const STAGES = ["onboarding", "strategie", "calendrier", "resultats"] as const;
 
@@ -55,10 +57,16 @@ export async function createClientAction(_prevState: FormState, formData: FormDa
 
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/portal/login/reset?token=${token}`;
   const { subject, html } = inviteClientEmail(nom, inviteUrl);
-  await sendEmail({ to: email, subject, html });
+  const { ok: emailSent } = await sendEmail({ to: email, subject, html });
 
   revalidatePath("/admin/clients");
-  return { success: `${nom} a été ajouté·e et invité·e par e-mail.` };
+  return {
+    success: emailSent
+      ? `${nom} a été ajouté·e et invité·e par e-mail.`
+      : `${nom} a été ajouté·e, mais l'e-mail d'invitation n'a pas pu être envoyé. Transmets-lui ce lien toi-même :`,
+    inviteUrl,
+    emailSent,
+  };
 }
 
 export async function toggleClientStatusAction(clientId: string) {
@@ -68,5 +76,17 @@ export async function toggleClientStatusAction(clientId: string) {
     where: { id: clientId },
     data: { statut: client.statut === "actif" ? "archive" : "actif" },
   });
+  revalidatePath("/admin/clients");
+}
+
+/**
+ * Suppression définitive d'un client — efface aussi en cascade tout ce qui
+ * lui est lié (documents, factures, publications, messages, demandes,
+ * appels, tâches). Irréversible : préférer l'archivage sauf besoin explicite
+ * de tout effacer.
+ */
+export async function deleteClientAction(clientId: string) {
+  await requireAdmin();
+  await prisma.client.delete({ where: { id: clientId } });
   revalidatePath("/admin/clients");
 }

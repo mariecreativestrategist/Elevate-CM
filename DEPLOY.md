@@ -155,6 +155,6 @@ Voir [PERSONNALISATION.md](https://github.com/mariecreativestrategist/Elevate-CM
 ## En cas de blocage
 
 - **Le déploiement échoue avec un message mentionnant "Prisma" ou "database"** : vérifie `DATABASE_URL` (mot de passe bien remplacé, pas d'espace en trop).
-- **Les e-mails ne partent pas** : va sur [resend.com](https://resend.com) → **Emails** → l'historique affiche l'erreur exacte (souvent : domaine non vérifié + envoi à une adresse autre que la tienne).
+- **Les e-mails ne partent pas** : va sur [resend.com](https://resend.com) → **Emails** → l'historique affiche l'erreur exacte (souvent : domaine non vérifié + envoi à une adresse autre que la tienne). *Pas besoin d'attendre d'avoir vérifié un domaine pour inviter des clients* : si l'e-mail échoue, l'app affiche quand même le lien d'invitation à l'écran (avec un bouton "copier") — tu peux le transmettre toi-même en attendant.
 - **L'upload d'un fichier échoue** : vérifie dans Supabase que le bucket `cadence-uploads` existe et est "Public", et que tu as bien mis la clé `service_role` (pas `anon`).
 - **Impossible de se connecter avec `admin@exemple.com`** : vérifie que l'étape 3 (script SQL) s'est bien terminée par un message de succès dans Supabase.
