@@ -1,6 +1,5 @@
 import { AuthShell } from "@/components/shared/auth-shell";
 import { ResetPasswordForm } from "@/components/shared/reset-password-form";
-import { SITE_NAME } from "@/lib/config";
 
 export default async function AdminResetPasswordPage({
   searchParams,
@@ -11,7 +10,7 @@ export default async function AdminResetPasswordPage({
 
   if (!token) {
     return (
-      <AuthShell eyebrow={SITE_NAME} title="Lien invalide">
+      <AuthShell title="Lien invalide">
         <p className="text-sm text-muted-foreground">
           Ce lien de réinitialisation est incomplet. Merci de refaire une demande.
         </p>
@@ -20,7 +19,7 @@ export default async function AdminResetPasswordPage({
   }
 
   return (
-    <AuthShell eyebrow={SITE_NAME} title="Nouveau mot de passe">
+    <AuthShell title="Nouveau mot de passe">
       <ResetPasswordForm token={token} />
     </AuthShell>
   );

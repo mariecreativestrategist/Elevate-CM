@@ -1,15 +1,14 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/shared/logo";
 
 export function AuthShell({
-  eyebrow,
   title,
   subtitle,
   children,
   topRight,
   large = false,
 }: {
-  eyebrow: string;
   title: string;
   subtitle?: string;
   children: ReactNode;
@@ -27,8 +26,11 @@ export function AuthShell({
         </Link>
       )}
       <div className="w-full max-w-sm space-y-8">
-        <div className="space-y-2 text-center">
-          <p className="font-mono text-xs tracking-[0.3em] text-magenta uppercase">{eyebrow}</p>
+        <div className="space-y-3 text-center">
+          <Logo
+            className="font-mono text-xs tracking-[0.3em] text-magenta uppercase"
+            imgClassName="mx-auto h-9 w-auto"
+          />
           <h1 className={large ? "font-serif text-5xl text-ink" : "font-serif text-3xl text-ink"}>{title}</h1>
           {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
         </div>
