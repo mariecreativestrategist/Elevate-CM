@@ -52,3 +52,7 @@ npm run db:seed          # réinitialise la base avec les données de démo (⚠
 npx prisma db push        # synchronise le schéma vers la base sans créer de migration
 npx prisma studio         # explorer la base de données
 ```
+
+## Licence
+
+Logiciel propriétaire — voir [LICENSE.md](LICENSE.md). Usage réservé aux personnes ayant reçu l'accès directement de l'auteur ; pas de redistribution ou de revente sans autorisation.
